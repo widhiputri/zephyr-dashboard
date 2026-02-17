@@ -113,13 +113,3 @@ zephyr-dashboard/
 | GET | `/api/metrics/:projectKey` | Get computed metrics for a project |
 | GET | `/api/metrics/:projectKey?days=30` | Get metrics filtered by date range |
 | POST | `/api/metrics/:projectKey/refresh` | Force cache refresh |
-
-## Building for Production
-
-```bash
-npm run build:backend
-npm run build:frontend
-```
-
-The backend compiles to `backend/dist/` and can be started with `npm run start -w backend`.
-The frontend builds to `frontend/dist/` and can be served by any static file server.
