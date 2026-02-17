@@ -123,7 +123,3 @@ npm run build:frontend
 
 The backend compiles to `backend/dist/` and can be started with `npm run start -w backend`.
 The frontend builds to `frontend/dist/` and can be served by any static file server.
-
-## License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
