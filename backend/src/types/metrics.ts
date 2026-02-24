@@ -1,7 +1,18 @@
 export interface TestCaseMetrics {
-  total: number;
+  total: number;       // excludes deprecated
   manual: number;
   automated: number;
+  uiAutomation: number;
+  apiAutomation: number;
+  deprecated: number;  // excluded from all other counts
+}
+
+export interface AutomationTypeProgress {
+  completed: number;
+  inProgress: number;
+  readyForAutomation: number;
+  total: number;
+  completionRate: number; // 0-100
 }
 
 export interface AutomationProgressMetrics {
@@ -10,6 +21,8 @@ export interface AutomationProgressMetrics {
   readyForAutomation: number;
   total: number;
   completionRate: number; // 0-100
+  ui: AutomationTypeProgress;
+  api: AutomationTypeProgress;
 }
 
 export interface ExecutionResultMetrics {

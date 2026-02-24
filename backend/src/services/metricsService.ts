@@ -1,17 +1,24 @@
-import { DashboardMetrics, AutomationProgressMetrics, ExecutionTrendPoint, TestCaseTrendPoint } from "../types/metrics.js";
+import { DashboardMetrics, AutomationProgressMetrics, AutomationTypeProgress, ExecutionTrendPoint, TestCaseTrendPoint } from "../types/metrics.js";
 import { ZephyrTestCase, ZephyrTestExecution } from "../types/zephyr.js";
 import { getCachedMetrics, setCachedMetrics } from "../cache/cacheManager.js";
 import { getAllProjects } from "./projectService.js";
 import { getAllTestCases, getTestCaseStatuses } from "./testCaseService.js";
 import { getAllTestExecutions, getExecutionStatuses } from "./testExecutionService.js";
 
-function isAutomationLabel(label: string): boolean {
-  const l = label.toLowerCase();
-  return l.includes("automation") || l.includes("automated");
+function getAutomationType(tc: ZephyrTestCase): "ui" | "api" | "manual" {
+  for (const label of tc.labels ?? []) {
+    const l = label.toLowerCase();
+    if (l.includes("automation") || l.includes("automated")) {
+      if (l.includes("ui")) return "ui";
+      if (l.includes("api")) return "api";
+      return "api"; // fallback for other automation labels
+    }
+  }
+  return "manual";
 }
 
-function hasAutomationLabel(tc: ZephyrTestCase): boolean {
-  return tc.labels?.some(isAutomationLabel) ?? false;
+function emptyTypeProgress(): AutomationTypeProgress {
+  return { completed: 0, inProgress: 0, readyForAutomation: 0, total: 0, completionRate: 0 };
 }
 
 function normalizeExecStatus(statusName: string): "pass" | "fail" | "blocked" | "notExecuted" {
@@ -19,6 +26,7 @@ function normalizeExecStatus(statusName: string): "pass" | "fail" | "blocked" | 
   if (s === "pass" || s === "passed") return "pass";
   if (s === "fail" || s === "failed") return "fail";
   if (s === "blocked") return "blocked";
+  if (s === "skipped" || s === "skip") return "notExecuted";
   return "notExecuted";
 }
 
@@ -110,48 +118,104 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
   const project = projects.find((p) => p.key === projectKey);
   const projectName = project?.key || projectKey;
 
-  // Classify test cases
-  const automationTCs = testCases.filter(hasAutomationLabel);
-  const automated = automationTCs.length;
-  const manual = testCases.length - automated;
-
-  // Automation progress
-  const automationProgress: AutomationProgressMetrics = {
-    completed: 0, inProgress: 0, readyForAutomation: 0,
-    total: automationTCs.length, completionRate: 0,
-  };
-  for (const tc of automationTCs) {
+  // Separate deprecated test cases (excluded from all counts)
+  const deprecatedTCs = testCases.filter((tc) => {
     const statusName = tcStatusMap.get(tc.status.id) || "";
-    automationProgress[classifyAutomationStatus(statusName)]++;
-  }
-  automationProgress.completionRate = automationProgress.total > 0
-    ? Math.round((automationProgress.completed / automationProgress.total) * 100) : 0;
+    return statusName.toLowerCase().includes("deprecated");
+  });
+  const activeTCs = testCases.filter((tc) => {
+    const statusName = tcStatusMap.get(tc.status.id) || "";
+    return !statusName.toLowerCase().includes("deprecated");
+  });
 
-  // Execution results
-  const executionResults = { pass: 0, fail: 0, blocked: 0, notExecuted: 0 };
+  // Classify active test cases by automation type
+  const uiTCs = activeTCs.filter((tc) => getAutomationType(tc) === "ui");
+  const apiTCs = activeTCs.filter((tc) => getAutomationType(tc) === "api");
+  const automationTCs = [...uiTCs, ...apiTCs];
+  const automated = automationTCs.length;
+  const manual = activeTCs.length - automated;
+
+  // Helper: compute progress for a set of automation test cases
+  function computeTypeProgress(tcs: ZephyrTestCase[]): AutomationTypeProgress {
+    const p = emptyTypeProgress();
+    p.total = tcs.length;
+    for (const tc of tcs) {
+      const statusName = tcStatusMap.get(tc.status.id) || "";
+      p[classifyAutomationStatus(statusName)]++;
+    }
+    p.completionRate = p.total > 0 ? Math.round((p.completed / p.total) * 100) : 0;
+    return p;
+  }
+
+  const uiProgress = computeTypeProgress(uiTCs);
+  const apiProgress = computeTypeProgress(apiTCs);
+
+  // Automation progress (aggregate + per-type)
+  const automationProgress: AutomationProgressMetrics = {
+    completed: uiProgress.completed + apiProgress.completed,
+    inProgress: uiProgress.inProgress + apiProgress.inProgress,
+    readyForAutomation: uiProgress.readyForAutomation + apiProgress.readyForAutomation,
+    total: automationTCs.length,
+    completionRate: automationTCs.length > 0
+      ? Math.round(((uiProgress.completed + apiProgress.completed) / automationTCs.length) * 100) : 0,
+    ui: uiProgress,
+    api: apiProgress,
+  };
+
+  // Build a map of latest execution per test case (by date)
+  const latestExecPerTC = new Map<number, ZephyrTestExecution>();
   for (const exec of executions) {
-    const statusName = execStatusMap.get(exec.testExecutionStatus.id) || "Not Executed";
-    executionResults[normalizeExecStatus(statusName)]++;
+    if (!exec.testCase?.id) continue;
+    const tcId = exec.testCase.id;
+    const existing = latestExecPerTC.get(tcId);
+    if (!existing) {
+      latestExecPerTC.set(tcId, exec);
+    } else {
+      const existingDate = existing.executionDate || existing.actualEndDate || "";
+      const thisDate = exec.executionDate || exec.actualEndDate || "";
+      if (thisDate > existingDate) latestExecPerTC.set(tcId, exec);
+    }
+  }
+
+  // Execution results: one count per test case using its latest execution status
+  // Test cases with no execution record count as notExecuted
+  const executionResults = { pass: 0, fail: 0, blocked: 0, notExecuted: 0 };
+  const activeTCIds = new Set(activeTCs.map((tc) => tc.id));
+  for (const tcId of activeTCIds) {
+    const exec = latestExecPerTC.get(tcId);
+    if (!exec) {
+      executionResults.notExecuted++;
+    } else {
+      const statusName = execStatusMap.get(exec.testExecutionStatus.id) || "";
+      executionResults[normalizeExecStatus(statusName)]++;
+    }
   }
 
   const executedCount = executionResults.pass + executionResults.fail + executionResults.blocked;
 
-  // Pass rate: of executed tests, what % passed
+  // Pass rate: of executed test cases, what % passed (latest status)
   const passRate = executedCount > 0
     ? Math.round((executionResults.pass / executedCount) * 100) : 0;
 
-  // Execution rate: what % of test cases have been executed
-  const executionRate = testCases.length > 0
-    ? Math.round((executedCount / testCases.length) * 100) : 0;
+  // Execution rate: unique test cases with at least one execution / total active
+  const executionRate = activeTCs.length > 0
+    ? Math.round((executedCount / activeTCs.length) * 100) : 0;
 
-  // Trend data
+  // Trend data (use active TCs only for test case trend)
   const executionTrend = buildTrend(executions, execStatusMap);
-  const testCaseTrend = buildTestCaseTrend(testCases);
+  const testCaseTrend = buildTestCaseTrend(activeTCs);
 
   const metrics: DashboardMetrics = {
     projectKey,
     projectName,
-    testCases: { total: testCases.length, manual, automated },
+    testCases: {
+      total: activeTCs.length,
+      manual,
+      automated,
+      uiAutomation: uiTCs.length,
+      apiAutomation: apiTCs.length,
+      deprecated: deprecatedTCs.length,
+    },
     automationProgress,
     executionResults,
     passRate,

@@ -11,7 +11,9 @@
     "dev:frontend": "npm run dev -w frontend",
     "build:backend": "npm run build -w backend",
     "build:frontend": "npm run build -w frontend",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+    "build": "npm run build:backend && npm run build:frontend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "start": "npm run start -w backend"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

@@ -33,24 +33,35 @@ export async function fetchAllPages<T>(
   params: Record<string, unknown> = {}
 ): Promise<T[]> {
   const client = getClient();
-  const allItems: T[] = [];
-  let startAt = 0;
-  const maxResults = 50;
-  let isLast = false;
+  const maxResults = 100;
 
-  while (!isLast) {
-    const res = await client.get<PaginatedResponse<T>>(path, {
-      params: { ...params, startAt, maxResults },
-    });
+  // Fetch first page to get total count
+  const firstRes = await client.get<PaginatedResponse<T>>(path, {
+    params: { ...params, startAt: 0, maxResults },
+  });
+  const firstPage = firstRes.data;
+  const allItems: T[] = [...firstPage.values];
 
-    const page = res.data;
-    allItems.push(...page.values);
-    isLast = page.isLast || startAt + maxResults >= page.total;
-    startAt += maxResults;
+  if (firstPage.isLast || firstPage.total <= maxResults) {
+    return allItems;
+  }
 
-    if (!isLast) {
-      await delay(config.paginationDelayMs);
-    }
+  // Fire all remaining pages in parallel
+  const remainingStarts: number[] = [];
+  for (let startAt = maxResults; startAt < firstPage.total; startAt += maxResults) {
+    remainingStarts.push(startAt);
+  }
+
+  const pages = await Promise.all(
+    remainingStarts.map((startAt) =>
+      client.get<PaginatedResponse<T>>(path, {
+        params: { ...params, startAt, maxResults },
+      }).then((r) => r.data.values)
+    )
+  );
+
+  for (const page of pages) {
+    allItems.push(...page);
   }
 
   return allItems;

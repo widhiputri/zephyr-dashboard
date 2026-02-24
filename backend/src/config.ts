@@ -18,5 +18,4 @@ export const config = {
     ttlProjects: parseInt(process.env.CACHE_TTL_PROJECTS || "3600", 10),
     ttlMetrics: parseInt(process.env.CACHE_TTL_METRICS || "300", 10),
   },
-  paginationDelayMs: parseInt(process.env.PAGINATION_DELAY_MS || "200", 10),
 };
