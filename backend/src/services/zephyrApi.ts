@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, isAxiosError } from "axios";
 import { config } from "../config.js";
 
 let apiClient: AxiosInstance | null = null;
@@ -71,4 +71,22 @@ export async function fetchSingle<T>(path: string): Promise<T> {
   const client = getClient();
   const res = await client.get<T>(path);
   return res.data;
+}
+
+export async function postToZephyr<T>(path: string, body: unknown): Promise<T> {
+  const client = getClient();
+  try {
+    const res = await client.post<T>(path, body, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return res.data;
+  } catch (err) {
+    if (isAxiosError(err) && err.response) {
+      const status = err.response.status;
+      const data = JSON.stringify(err.response.data);
+      console.error(`[Zephyr POST ${path}] ${status}: ${data}`);
+      throw new Error(`Zephyr API ${status}: ${data}`);
+    }
+    throw err;
+  }
 }

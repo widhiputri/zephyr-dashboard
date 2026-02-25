@@ -128,6 +128,73 @@ export function useMetrics(projectKey: string | null, pollingInterval: number, d
   });
 }
 
+export interface ParsedExecution {
+  testCaseKey: string;
+  testName: string;
+  status: "PASSED" | "FAILED" | "SKIPPED";
+}
+
+export interface SyncPreview {
+  total: number;
+  passed: number;
+  failed: number;
+  skipped: number;
+  executions: ParsedExecution[];
+}
+
+export interface SyncResult {
+  synced: number;
+  testCycleKey: string;
+  errors: { testCaseKey: string; error: string }[];
+}
+
+export function usePreviewSync() {
+  return useMutation({
+    mutationFn: async ({ projectKey, file }: { projectKey: string; file: File }) => {
+      const text = await file.text();
+      const res = await fetch(`/api/ciSync/${projectKey}/preview`, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" },
+        body: text,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error ?? `Preview failed: ${res.status}`);
+      }
+      return res.json() as Promise<SyncPreview>;
+    },
+  });
+}
+
+export function usePushSync() {
+  return useMutation({
+    mutationFn: async ({
+      projectKey,
+      executions,
+      executionDate,
+      gitRef,
+      jobId,
+    }: {
+      projectKey: string;
+      executions: ParsedExecution[];
+      executionDate: string;
+      gitRef?: string;
+      jobId?: string;
+    }) => {
+      const res = await fetch(`/api/ciSync/${projectKey}/push`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ executions, executionDate, gitRef, jobId }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error ?? `Push failed: ${res.status}`);
+      }
+      return res.json() as Promise<SyncResult>;
+    },
+  });
+}
+
 export function useRefreshMetrics() {
   const queryClient = useQueryClient();
   return useMutation({

@@ -5,6 +5,7 @@ import healthRouter from "./routes/health.js";
 import projectsRouter from "./routes/projects.js";
 import metricsRouter from "./routes/metrics.js";
 import foldersRouter from "./routes/folders.js";
+import ciSyncRouter from "./routes/ciSync.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 
@@ -20,6 +21,7 @@ app.use("/api/health", healthRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/metrics", metricsRouter);
 app.use("/api/folders", foldersRouter);
+app.use("/api/ciSync", ciSyncRouter);
 
 app.use(errorHandler);
 

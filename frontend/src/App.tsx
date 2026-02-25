@@ -6,10 +6,11 @@ import DateRangeFilter from "./components/DateRangeFilter";
 import TeamFilter from "./components/TeamFilter";
 import DashboardGrid from "./components/DashboardGrid";
 import ForecastPage from "./pages/ForecastPage";
+import CISyncPage from "./pages/CISyncPage";
 import { useMetrics, useRefreshMetrics, useTeamFolders } from "./api/dashboardApi";
 import { exportDashboardPdf } from "./utils/exportPdf";
 
-type Page = "dashboard" | "forecast";
+type Page = "dashboard" | "forecast" | "ciSync";
 
 export default function App() {
   const [page, setPage] = useState<Page>("dashboard");
@@ -116,6 +117,8 @@ export default function App() {
           projectKey={projectKey}
         />
       )}
+
+      {page === "ciSync" && <CISyncPage projectKey={projectKey} />}
     </Layout>
   );
 }

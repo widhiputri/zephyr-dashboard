@@ -1,6 +1,6 @@
 import React from "react";
 
-type Page = "dashboard" | "forecast";
+type Page = "dashboard" | "forecast" | "ciSync";
 
 interface Props {
   children: React.ReactNode;
@@ -11,6 +11,7 @@ interface Props {
 const navItems: { id: Page; label: string }[] = [
   { id: "dashboard", label: "Dashboard" },
   { id: "forecast", label: "Forecast" },
+  { id: "ciSync", label: "CI Sync" },
 ];
 
 export default function Layout({ children, activePage, onNavigate }: Props) {
