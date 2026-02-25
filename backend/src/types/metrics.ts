@@ -1,10 +1,11 @@
 export interface TestCaseMetrics {
-  total: number;       // excludes deprecated
+  total: number;       // excludes deprecated and draft
   manual: number;
   automated: number;
   uiAutomation: number;
   apiAutomation: number;
   deprecated: number;  // excluded from all other counts
+  draft: number;       // excluded from all other counts
 }
 
 export interface AutomationTypeProgress {

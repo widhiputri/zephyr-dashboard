@@ -25,9 +25,12 @@ export default function TotalTestCasesCard({ testCases }: Props) {
             <span className="font-semibold text-teal-600">{formatNumber(testCases.apiAutomation)}</span>
           </div>
         </div>
-        {testCases.deprecated > 0 && (
+        {(testCases.deprecated > 0 || testCases.draft > 0) && (
           <p className="mt-3 text-xs text-gray-400">
-            *{formatNumber(testCases.deprecated)} deprecated test case(s) excluded
+            *Excluded:{" "}
+            {testCases.deprecated > 0 && `${formatNumber(testCases.deprecated)} deprecated`}
+            {testCases.deprecated > 0 && testCases.draft > 0 && ", "}
+            {testCases.draft > 0 && `${formatNumber(testCases.draft)} draft`}
           </p>
         )}
         {testCases.manual + testCases.uiAutomation + testCases.apiAutomation > testCases.total && (

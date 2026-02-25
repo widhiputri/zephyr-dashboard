@@ -19,6 +19,7 @@ export interface TestCaseMetrics {
   uiAutomation: number;
   apiAutomation: number;
   deprecated: number;
+  draft: number;
 }
 
 export interface AutomationTypeProgress {

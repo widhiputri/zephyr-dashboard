@@ -134,14 +134,19 @@ export async function getMetrics(projectKey: string, days?: number, teamFolderId
   const project = projects.find((p) => p.key === projectKey);
   const projectName = project?.key || projectKey;
 
-  // Separate deprecated test cases (excluded from all counts)
+  // Separate excluded test cases (deprecated + draft) — not counted anywhere
   const deprecatedTCs = filteredTestCases.filter((tc) => {
     const statusName = tcStatusMap.get(tc.status.id) || "";
     return statusName.toLowerCase().includes("deprecated");
   });
+  const draftTCs = filteredTestCases.filter((tc) => {
+    const statusName = tcStatusMap.get(tc.status.id) || "";
+    return statusName.toLowerCase().includes("draft");
+  });
   const activeTCs = filteredTestCases.filter((tc) => {
     const statusName = tcStatusMap.get(tc.status.id) || "";
-    return !statusName.toLowerCase().includes("deprecated");
+    const s = statusName.toLowerCase();
+    return !s.includes("deprecated") && !s.includes("draft");
   });
 
   // Classify active test cases by automation type
@@ -241,6 +246,7 @@ export async function getMetrics(projectKey: string, days?: number, teamFolderId
       uiAutomation: uiTCs.length,
       apiAutomation: apiTCs.length,
       deprecated: deprecatedTCs.length,
+      draft: draftTCs.length,
     },
     automationProgress,
     executionResults,
