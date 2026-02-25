@@ -54,6 +54,22 @@ export interface TestCaseTrendPoint {
   cumulative: number;
 }
 
+export interface ForecastPoint {
+  month: string;
+  value: number;
+  lower: number;
+  upper: number;
+  isForecast: boolean;
+}
+
+export interface QAForecast {
+  passRate: ForecastPoint[];
+  horizonMonths: number;
+  modelType: string;
+  dataPointsUsed: number;
+  insufficient: boolean;
+}
+
 export interface DashboardMetrics {
   projectKey: string;
   projectName: string;
@@ -64,6 +80,7 @@ export interface DashboardMetrics {
   executionRate: number;
   executionTrend: ExecutionTrendPoint[];
   testCaseTrend: TestCaseTrendPoint[];
+  forecast?: QAForecast;
   lastUpdated: string;
 }
 

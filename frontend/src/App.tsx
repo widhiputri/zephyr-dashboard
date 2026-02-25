@@ -4,10 +4,14 @@ import ProjectSelector from "./components/ProjectSelector";
 import RefreshControls from "./components/RefreshControls";
 import DateRangeFilter from "./components/DateRangeFilter";
 import DashboardGrid from "./components/DashboardGrid";
+import ForecastPage from "./pages/ForecastPage";
 import { useMetrics, useRefreshMetrics } from "./api/dashboardApi";
 import { exportDashboardPdf } from "./utils/exportPdf";
 
+type Page = "dashboard" | "forecast";
+
 export default function App() {
+  const [page, setPage] = useState<Page>("dashboard");
   const [projectKey, setProjectKey] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState(300_000);
   const [days, setDays] = useState<number | undefined>(undefined);
@@ -34,10 +38,10 @@ export default function App() {
   };
 
   return (
-    <Layout>
+    <Layout activePage={page} onNavigate={setPage}>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <ProjectSelector selectedKey={projectKey} onSelect={setProjectKey} />
-        {projectKey && (
+        {projectKey && page === "dashboard" && (
           <div className="flex flex-wrap items-center gap-3">
             <RefreshControls
               pollingInterval={pollingInterval}
@@ -59,38 +63,51 @@ export default function App() {
         )}
       </div>
 
-      {projectKey && (
+      {projectKey && page === "dashboard" && (
         <div className="mb-6">
           <DateRangeFilter value={days} onChange={setDays} />
         </div>
       )}
 
-      {!projectKey && (
-        <div className="text-center py-20 text-gray-400">
-          Select a project to view metrics
-        </div>
+      {page === "dashboard" && (
+        <>
+          {!projectKey && (
+            <div className="text-center py-20 text-gray-400">
+              Select a project to view metrics
+            </div>
+          )}
+
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+              <svg className="animate-spin h-8 w-8 mb-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Loading metrics...
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-20 text-red-500">
+              Failed to load metrics: {(error as Error).message}
+            </div>
+          )}
+
+          {metrics && (
+            <div ref={dashboardRef}>
+              <DashboardGrid metrics={metrics} />
+            </div>
+          )}
+        </>
       )}
 
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-          <svg className="animate-spin h-8 w-8 mb-3 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Loading metrics...
-        </div>
-      )}
-
-      {error && (
-        <div className="text-center py-20 text-red-500">
-          Failed to load metrics: {(error as Error).message}
-        </div>
-      )}
-
-      {metrics && (
-        <div ref={dashboardRef}>
-          <DashboardGrid metrics={metrics} />
-        </div>
+      {page === "forecast" && (
+        <ForecastPage
+          metrics={metrics}
+          isLoading={isLoading}
+          error={error as Error | null}
+          projectKey={projectKey}
+        />
       )}
     </Layout>
   );

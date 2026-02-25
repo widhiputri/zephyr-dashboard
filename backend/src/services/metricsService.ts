@@ -4,6 +4,7 @@ import { getCachedMetrics, setCachedMetrics } from "../cache/cacheManager.js";
 import { getAllProjects } from "./projectService.js";
 import { getAllTestCases, getTestCaseStatuses } from "./testCaseService.js";
 import { getAllTestExecutions, getExecutionStatuses } from "./testExecutionService.js";
+import { forecastPassRate } from "./forecastService.js";
 
 function getAutomationType(tc: ZephyrTestCase): "ui" | "api" | "manual" {
   for (const label of tc.labels ?? []) {
@@ -202,8 +203,11 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
     ? Math.round((executedCount / activeTCs.length) * 100) : 0;
 
   // Trend data (use active TCs only for test case trend)
+  // Always use all executions (not date-filtered) for forecast to maximize training history
   const executionTrend = buildTrend(executions, execStatusMap);
+  const allTimeTrend = days ? buildTrend(allExecutions, execStatusMap) : executionTrend;
   const testCaseTrend = buildTestCaseTrend(activeTCs);
+  const forecast = forecastPassRate(allTimeTrend);
 
   const metrics: DashboardMetrics = {
     projectKey,
@@ -222,6 +226,7 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
     executionRate: Math.min(executionRate, 100),
     executionTrend,
     testCaseTrend,
+    forecast,
     lastUpdated: new Date().toISOString(),
   };
 

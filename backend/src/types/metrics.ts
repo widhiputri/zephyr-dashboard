@@ -45,6 +45,22 @@ export interface TestCaseTrendPoint {
   cumulative: number;
 }
 
+export interface ForecastPoint {
+  month: string;        // "YYYY-MM"
+  value: number;        // predicted pass rate 0–100
+  lower: number;        // 90% CI lower bound, clamped to 0
+  upper: number;        // 90% CI upper bound, clamped to 100
+  isForecast: boolean;
+}
+
+export interface QAForecast {
+  passRate: ForecastPoint[];
+  horizonMonths: number;   // 3
+  modelType: string;       // "holt-des"
+  dataPointsUsed: number;
+  insufficient: boolean;   // true if < 3 months of execution data
+}
+
 export interface DashboardMetrics {
   projectKey: string;
   projectName: string;
@@ -55,5 +71,6 @@ export interface DashboardMetrics {
   executionRate: number;  // 0-100, what % of test cases have been executed
   executionTrend: ExecutionTrendPoint[];
   testCaseTrend: TestCaseTrendPoint[];
+  forecast?: QAForecast;
   lastUpdated: string;
 }
