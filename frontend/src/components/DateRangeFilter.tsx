@@ -12,7 +12,8 @@ const RANGES = [
 
 export default function DateRangeFilter({ value, onChange }: Props) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="text-xs text-gray-400 mr-1">Execution Time Frame:</span>
       {RANGES.map((r) => {
         const active = value === r.value;
         return (
