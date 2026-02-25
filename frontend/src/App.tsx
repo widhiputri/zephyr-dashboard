@@ -1,11 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Layout from "./components/Layout";
 import ProjectSelector from "./components/ProjectSelector";
 import RefreshControls from "./components/RefreshControls";
 import DateRangeFilter from "./components/DateRangeFilter";
+import TeamFilter from "./components/TeamFilter";
 import DashboardGrid from "./components/DashboardGrid";
 import ForecastPage from "./pages/ForecastPage";
-import { useMetrics, useRefreshMetrics } from "./api/dashboardApi";
+import { useMetrics, useRefreshMetrics, useTeamFolders } from "./api/dashboardApi";
 import { exportDashboardPdf } from "./utils/exportPdf";
 
 type Page = "dashboard" | "forecast";
@@ -15,15 +16,20 @@ export default function App() {
   const [projectKey, setProjectKey] = useState<string | null>(null);
   const [pollingInterval, setPollingInterval] = useState(300_000);
   const [days, setDays] = useState<number | undefined>(undefined);
+  const [teamFolderId, setTeamFolderId] = useState<number | undefined>(undefined);
   const [exporting, setExporting] = useState(false);
   const dashboardRef = useRef<HTMLDivElement>(null);
 
-  const { data: metrics, isLoading, error } = useMetrics(projectKey, pollingInterval, days);
+  const { data: teamFolders = [] } = useTeamFolders(projectKey);
+  const { data: metrics, isLoading, error } = useMetrics(projectKey, pollingInterval, days, teamFolderId);
   const refreshMutation = useRefreshMetrics();
+
+  // Reset team filter when project changes
+  useEffect(() => { setTeamFolderId(undefined); }, [projectKey]);
 
   const handleRefresh = () => {
     if (projectKey) {
-      refreshMutation.mutate({ projectKey, days });
+      refreshMutation.mutate({ projectKey, days, teamFolderId });
     }
   };
 
@@ -64,8 +70,9 @@ export default function App() {
       </div>
 
       {projectKey && page === "dashboard" && (
-        <div className="mb-6">
+        <div className="mb-6 space-y-2">
           <DateRangeFilter value={days} onChange={setDays} />
+          <TeamFilter teams={teamFolders} value={teamFolderId} onChange={setTeamFolderId} />
         </div>
       )}
 

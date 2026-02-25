@@ -14,6 +14,7 @@ export interface ZephyrTestCase {
   createdOn: string;
   customFields: Record<string, unknown>;
   labels: string[];
+  folder?: { id: number };
 }
 
 export interface ZephyrTestExecution {

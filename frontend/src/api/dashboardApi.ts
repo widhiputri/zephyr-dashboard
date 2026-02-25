@@ -7,6 +7,11 @@ export interface ZephyrProject {
   enabled: boolean;
 }
 
+export interface TeamFolder {
+  id: number;
+  name: string;
+}
+
 export interface TestCaseMetrics {
   total: number;
   manual: number;
@@ -100,11 +105,23 @@ export function useProjects() {
   });
 }
 
-export function useMetrics(projectKey: string | null, pollingInterval: number, days?: number) {
-  const daysParam = days ? `?days=${days}` : "";
+export function useTeamFolders(projectKey: string | null) {
   return useQuery({
-    queryKey: ["metrics", projectKey, days],
-    queryFn: () => fetchJson<DashboardMetrics>(`/api/metrics/${projectKey}${daysParam}`),
+    queryKey: ["folders", projectKey],
+    queryFn: () => fetchJson<TeamFolder[]>(`/api/folders/${projectKey}`),
+    enabled: !!projectKey,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+export function useMetrics(projectKey: string | null, pollingInterval: number, days?: number, teamFolderId?: number) {
+  const params = new URLSearchParams();
+  if (days) params.set("days", String(days));
+  if (teamFolderId !== undefined) params.set("teamFolderId", String(teamFolderId));
+  const query = params.size > 0 ? `?${params}` : "";
+  return useQuery({
+    queryKey: ["metrics", projectKey, days, teamFolderId],
+    queryFn: () => fetchJson<DashboardMetrics>(`/api/metrics/${projectKey}${query}`),
     enabled: !!projectKey,
     refetchInterval: pollingInterval || false,
   });
@@ -113,14 +130,17 @@ export function useMetrics(projectKey: string | null, pollingInterval: number, d
 export function useRefreshMetrics() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ projectKey, days }: { projectKey: string; days?: number }) => {
-      const daysParam = days ? `?days=${days}` : "";
-      return fetch(`/api/metrics/${projectKey}/refresh${daysParam}`, { method: "POST" }).then(
+    mutationFn: ({ projectKey, days, teamFolderId }: { projectKey: string; days?: number; teamFolderId?: number }) => {
+      const params = new URLSearchParams();
+      if (days) params.set("days", String(days));
+      if (teamFolderId !== undefined) params.set("teamFolderId", String(teamFolderId));
+      const query = params.size > 0 ? `?${params}` : "";
+      return fetch(`/api/metrics/${projectKey}/refresh${query}`, { method: "POST" }).then(
         (r) => r.json() as Promise<DashboardMetrics>
       );
     },
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(["metrics", data.projectKey, variables.days], data);
+      queryClient.setQueryData(["metrics", data.projectKey, variables.days, variables.teamFolderId], data);
     },
   });
 }

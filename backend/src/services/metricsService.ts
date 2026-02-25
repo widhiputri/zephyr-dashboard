@@ -5,6 +5,7 @@ import { getAllProjects } from "./projectService.js";
 import { getAllTestCases, getTestCaseStatuses } from "./testCaseService.js";
 import { getAllTestExecutions, getExecutionStatuses } from "./testExecutionService.js";
 import { forecastPassRate } from "./forecastService.js";
+import { buildTeamMap } from "./folderService.js";
 
 function getAutomationType(tc: ZephyrTestCase): "ui" | "api" | "manual" {
   for (const label of tc.labels ?? []) {
@@ -83,8 +84,8 @@ function buildTestCaseTrend(testCases: ZephyrTestCase[]): TestCaseTrendPoint[] {
   });
 }
 
-export async function getMetrics(projectKey: string, days?: number): Promise<DashboardMetrics> {
-  const cacheKey = days ? `${projectKey}:${days}` : projectKey;
+export async function getMetrics(projectKey: string, days?: number, teamFolderId?: number): Promise<DashboardMetrics> {
+  const cacheKey = [projectKey, days ?? "all", teamFolderId ?? "all"].join(":");
   const cached = getCachedMetrics<DashboardMetrics>(cacheKey);
   if (cached) {
     return cached;
@@ -104,13 +105,26 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
   const execStatusMap = new Map<number, string>();
   for (const s of execStatuses) execStatusMap.set(s.id, s.name);
 
+  // Filter test cases by team folder if specified
+  let filteredTestCases = testCases;
+  if (teamFolderId !== undefined) {
+    const teamMap = await buildTeamMap(projectKey);
+    filteredTestCases = testCases.filter((tc) => {
+      if (!tc.folder) return false;
+      return teamMap.get(tc.folder.id) === teamFolderId;
+    });
+  }
+  const teamTCIds = new Set(filteredTestCases.map((tc) => tc.id));
+
   // Filter executions by date range if specified
-  let executions = allExecutions;
+  let executions = teamFolderId !== undefined
+    ? allExecutions.filter((e) => e.testCase?.id !== undefined && teamTCIds.has(e.testCase.id))
+    : allExecutions;
   if (days) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
     const cutoffIso = cutoff.toISOString();
-    executions = allExecutions.filter((e) => {
+    executions = executions.filter((e) => {
       const date = e.executionDate || e.actualEndDate;
       return date && date >= cutoffIso;
     });
@@ -120,11 +134,11 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
   const projectName = project?.key || projectKey;
 
   // Separate deprecated test cases (excluded from all counts)
-  const deprecatedTCs = testCases.filter((tc) => {
+  const deprecatedTCs = filteredTestCases.filter((tc) => {
     const statusName = tcStatusMap.get(tc.status.id) || "";
     return statusName.toLowerCase().includes("deprecated");
   });
-  const activeTCs = testCases.filter((tc) => {
+  const activeTCs = filteredTestCases.filter((tc) => {
     const statusName = tcStatusMap.get(tc.status.id) || "";
     return !statusName.toLowerCase().includes("deprecated");
   });
@@ -205,7 +219,10 @@ export async function getMetrics(projectKey: string, days?: number): Promise<Das
   // Trend data (use active TCs only for test case trend)
   // Always use all executions (not date-filtered) for forecast to maximize training history
   const executionTrend = buildTrend(executions, execStatusMap);
-  const allTimeTrend = days ? buildTrend(allExecutions, execStatusMap) : executionTrend;
+  const allTeamExecutions = teamFolderId !== undefined
+    ? allExecutions.filter((e) => e.testCase?.id !== undefined && teamTCIds.has(e.testCase.id))
+    : allExecutions;
+  const allTimeTrend = days ? buildTrend(allTeamExecutions, execStatusMap) : executionTrend;
   const testCaseTrend = buildTestCaseTrend(activeTCs);
   const forecast = forecastPassRate(allTimeTrend);
 

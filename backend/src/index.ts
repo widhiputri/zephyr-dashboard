@@ -4,6 +4,7 @@ import { config } from "./config.js";
 import healthRouter from "./routes/health.js";
 import projectsRouter from "./routes/projects.js";
 import metricsRouter from "./routes/metrics.js";
+import foldersRouter from "./routes/folders.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 
@@ -18,6 +19,7 @@ app.use("/api", apiLimiter);
 app.use("/api/health", healthRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/metrics", metricsRouter);
+app.use("/api/folders", foldersRouter);
 
 app.use(errorHandler);
 
