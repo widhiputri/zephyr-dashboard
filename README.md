@@ -60,7 +60,6 @@ A proof-of-concept dashboard that visualizes QA metrics from [Zephyr Scale](http
 
    ```
    ZEPHYR_API_TOKEN=your-zephyr-scale-api-token
-   ZEPHYR_BASE_URL=https://your-instance.atlassian.net
    ```
 
 4. **Start development servers**
