@@ -83,7 +83,8 @@ zephyr-dashboard/
 │       │   ├── projectService.ts
 │       │   ├── testCaseService.ts
 │       │   ├── testExecutionService.ts
-│       │   └── metricsService.ts # Aggregation and metric computation
+│       │   ├── metricsService.ts # Aggregation and metric computation
+│       │   └── forecastService.ts # Holt's DES pass rate forecasting engine
 │       ├── routes/
 │       │   ├── health.ts         # GET /api/health
 │       │   ├── projects.ts       # GET /api/projects
@@ -96,8 +97,18 @@ zephyr-dashboard/
 │   └── src/
 │       ├── App.tsx
 │       ├── api/dashboardApi.ts   # React Query hooks
-│       ├── components/           # Dashboard UI components
-│       └── utils/                # Formatting, PDF export
+│       ├── components/
+│       │   ├── Layout.tsx                 # Header + Dashboard/Forecast nav tabs
+│       │   ├── DashboardGrid.tsx          # Main dashboard layout
+│       │   ├── PassRateForecastChart.tsx  # Forecast chart with CI band
+│       │   ├── ForecastInfoModal.tsx      # Info modal with methodology explanation
+│       │   ├── ForecastSummaryPanel.tsx   # Dynamic analysis and recommendations
+│       │   └── ...                        # Other dashboard chart components
+│       ├── pages/
+│       │   └── ForecastPage.tsx           # Predictive analytics page
+│       └── utils/
+│           ├── forecastSummary.ts         # buildForecastInsight() logic
+│           └── ...                        # Formatting, PDF export
 ├── .env.example
 ├── .gitignore
 └── package.json                  # npm workspaces root
