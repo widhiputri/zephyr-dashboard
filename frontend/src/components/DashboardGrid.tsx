@@ -23,7 +23,7 @@ export default function DashboardGrid({ metrics }: Props) {
       />
       <PassRateCard passRate={metrics.passRate} executionResults={metrics.executionResults} />
       <ManualVsAutomatedChart testCases={metrics.testCases} automationProgress={metrics.automationProgress} />
-      <AutomationProgressChart progress={metrics.automationProgress} />
+      <AutomationProgressChart progress={metrics.automationProgress} testCases={metrics.testCases} />
       <UIvsAPIAutomationChart progress={metrics.automationProgress} />
       <div className="md:col-span-2 lg:col-span-3">
         <ExecutionTrendChart trend={metrics.executionTrend} />

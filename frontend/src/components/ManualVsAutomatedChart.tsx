@@ -2,7 +2,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recha
 import MetricCard from "./MetricCard";
 import { TestCaseMetrics, AutomationProgressMetrics } from "../api/dashboardApi";
 
-const COLORS = ["#3B82F6", "#10B981", "#0D9488", "#F59E0B", "#9CA3AF"];
+const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#9CA3AF"];
 
 interface Props {
   testCases: TestCaseMetrics;
@@ -12,8 +12,7 @@ interface Props {
 export default function ManualVsAutomatedChart({ testCases, automationProgress }: Props) {
   const data = [
     { name: "Manual", value: testCases.manual },
-    { name: "UI Automation (Done)", value: automationProgress.ui.completed },
-    { name: "API Automation (Done)", value: automationProgress.api.completed },
+    { name: "Automation Done", value: automationProgress.completed },
     { name: "Automation In Progress", value: automationProgress.inProgress },
     { name: "Ready for Automation", value: automationProgress.readyForAutomation },
   ].filter((d) => d.value > 0);

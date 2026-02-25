@@ -7,16 +7,17 @@ import { getAllTestExecutions, getExecutionStatuses } from "./testExecutionServi
 import { forecastPassRate } from "./forecastService.js";
 import { buildTeamMap } from "./folderService.js";
 
-function getAutomationType(tc: ZephyrTestCase): "ui" | "api" | "manual" {
+function getAutomationTypes(tc: ZephyrTestCase): Set<"ui" | "api"> {
+  const types = new Set<"ui" | "api">();
   for (const label of tc.labels ?? []) {
     const l = label.toLowerCase();
     if (l.includes("automation") || l.includes("automated")) {
-      if (l.includes("ui")) return "ui";
-      if (l.includes("api")) return "api";
-      return "api"; // fallback for other automation labels
+      if (l.includes("ui")) types.add("ui");
+      else if (l.includes("api")) types.add("api");
+      else types.add("api"); // fallback for other automation labels
     }
   }
-  return "manual";
+  return types;
 }
 
 function emptyTypeProgress(): AutomationTypeProgress {
@@ -144,9 +145,11 @@ export async function getMetrics(projectKey: string, days?: number, teamFolderId
   });
 
   // Classify active test cases by automation type
-  const uiTCs = activeTCs.filter((tc) => getAutomationType(tc) === "ui");
-  const apiTCs = activeTCs.filter((tc) => getAutomationType(tc) === "api");
-  const automationTCs = [...uiTCs, ...apiTCs];
+  // A TC with both UI_Automation and API_Automation labels is counted in both sets
+  const uiTCs = activeTCs.filter((tc) => getAutomationTypes(tc).has("ui"));
+  const apiTCs = activeTCs.filter((tc) => getAutomationTypes(tc).has("api"));
+  // automated = unique TCs with at least one automation label (no double-counting for total)
+  const automationTCs = activeTCs.filter((tc) => getAutomationTypes(tc).size > 0);
   const automated = automationTCs.length;
   const manual = activeTCs.length - automated;
 
@@ -164,15 +167,17 @@ export async function getMetrics(projectKey: string, days?: number, teamFolderId
 
   const uiProgress = computeTypeProgress(uiTCs);
   const apiProgress = computeTypeProgress(apiTCs);
+  // Aggregate progress uses the deduplicated automationTCs list so multi-label
+  // TCs are not double-counted and completionRate can never exceed 100%
+  const aggregateProgress = computeTypeProgress(automationTCs);
 
   // Automation progress (aggregate + per-type)
   const automationProgress: AutomationProgressMetrics = {
-    completed: uiProgress.completed + apiProgress.completed,
-    inProgress: uiProgress.inProgress + apiProgress.inProgress,
-    readyForAutomation: uiProgress.readyForAutomation + apiProgress.readyForAutomation,
+    completed: aggregateProgress.completed,
+    inProgress: aggregateProgress.inProgress,
+    readyForAutomation: aggregateProgress.readyForAutomation,
     total: automationTCs.length,
-    completionRate: automationTCs.length > 0
-      ? Math.round(((uiProgress.completed + apiProgress.completed) / automationTCs.length) * 100) : 0,
+    completionRate: aggregateProgress.completionRate,
     ui: uiProgress,
     api: apiProgress,
   };

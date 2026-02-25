@@ -10,14 +10,16 @@ import {
   LabelList,
 } from "recharts";
 import MetricCard from "./MetricCard";
-import { AutomationProgressMetrics } from "../api/dashboardApi";
+import { AutomationProgressMetrics, TestCaseMetrics } from "../api/dashboardApi";
 import { formatNumber } from "../utils/format";
 
 interface Props {
   progress: AutomationProgressMetrics;
+  testCases: TestCaseMetrics;
 }
 
-export default function AutomationProgressChart({ progress }: Props) {
+export default function AutomationProgressChart({ progress, testCases }: Props) {
+  const multiLabel = testCases.uiAutomation + testCases.apiAutomation - progress.total;
   const data = [
     { name: "Completed", value: progress.completed, fill: "#10B981" },
     { name: "In Progress", value: progress.inProgress, fill: "#F59E0B" },
@@ -48,6 +50,10 @@ export default function AutomationProgressChart({ progress }: Props) {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+      <p className="mt-2 text-xs text-gray-400 text-center">
+        *{formatNumber(progress.total)} automated test cases: {formatNumber(testCases.uiAutomation)} UI + {formatNumber(testCases.apiAutomation)} API
+        {multiLabel > 0 && ` and ${formatNumber(multiLabel)} test case(s) counted in both`}
+      </p>
     </MetricCard>
   );
 }

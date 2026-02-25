@@ -30,6 +30,11 @@ export default function TotalTestCasesCard({ testCases }: Props) {
             *{formatNumber(testCases.deprecated)} deprecated test case(s) excluded
           </p>
         )}
+        {testCases.manual + testCases.uiAutomation + testCases.apiAutomation > testCases.total && (
+          <p className="mt-2 text-xs text-gray-400 text-center max-w-xs">
+            * Counts exceed total — some test cases have multiple automation labels and appear in more than one category
+          </p>
+        )}
       </div>
     </MetricCard>
   );
