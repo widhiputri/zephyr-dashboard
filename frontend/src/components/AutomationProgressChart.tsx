@@ -21,9 +21,9 @@ interface Props {
 export default function AutomationProgressChart({ progress, testCases }: Props) {
   const multiLabel = testCases.uiAutomation + testCases.apiAutomation - progress.total;
   const data = [
-    { name: "Completed", value: progress.completed, fill: "#10B981" },
-    { name: "In Progress", value: progress.inProgress, fill: "#F59E0B" },
-    { name: "Ready", value: progress.readyForAutomation, fill: "#9CA3AF" },
+    { name: "Automated", value: progress.completed, fill: "#10B981" },
+    { name: "Automation In Progress", value: progress.inProgress, fill: "#F59E0B" },
+    { name: "Ready for Automation", value: progress.readyForAutomation, fill: "#9CA3AF" },
   ];
 
   return (
@@ -33,7 +33,7 @@ export default function AutomationProgressChart({ progress, testCases }: Props) 
           {progress.completionRate}%
         </span>
         <span className="text-sm text-gray-500 ml-2">
-          ({formatNumber(progress.completed)}/{formatNumber(progress.total)} completed)
+          ({formatNumber(progress.completed)}/{formatNumber(progress.total)} automated)
         </span>
       </div>
       <ResponsiveContainer width="100%" height={200}>

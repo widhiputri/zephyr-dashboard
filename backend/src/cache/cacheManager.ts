@@ -28,7 +28,9 @@ export function setCachedMetrics<T>(projectKey: string, data: T): void {
 }
 
 export function invalidateMetrics(projectKey: string): void {
-  metricsCache.del(`metrics:${projectKey}`);
+  const prefix = `metrics:${projectKey}:`;
+  const keys = metricsCache.keys().filter((k) => k.startsWith(prefix));
+  if (keys.length > 0) metricsCache.del(keys);
 }
 
 export function invalidateAll(): void {

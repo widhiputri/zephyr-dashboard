@@ -12,7 +12,7 @@ interface Props {
 export default function ManualVsAutomatedChart({ testCases, automationProgress }: Props) {
   const data = [
     { name: "Manual", value: testCases.manual },
-    { name: "Automation Done", value: automationProgress.completed },
+    { name: "Automated", value: automationProgress.completed },
     { name: "Automation In Progress", value: automationProgress.inProgress },
     { name: "Ready for Automation", value: automationProgress.readyForAutomation },
   ].filter((d) => d.value > 0);
