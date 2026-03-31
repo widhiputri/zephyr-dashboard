@@ -1,21 +1,22 @@
 # Zephyr Scale QA Metrics Dashboard
 
-A proof-of-concept dashboard that visualizes QA metrics from [Zephyr Scale](https://smartbear.com/test-management/zephyr-scale/) (Test Management for Jira). Built as a monorepo with a Node.js/Express backend and React frontend.
+A dashboard that visualizes QA metrics from [Zephyr Scale](https://smartbear.com/test-management/zephyr-scale/) (Test Management for Jira). Built as a monorepo with a Node.js/Express backend and React frontend.
 
 ## Features
 
 ### Dashboard
 - **Project selector** — browse all Zephyr Scale projects
-- **Team folder filter** — narrow metrics to a specific sub-team folder
+- **Squad filter** — narrow metrics to a specific team sub-folder per project
 - **Test case overview** — total count with manual vs automated breakdown, excludes deprecated and draft test cases
 - **Automation progress** — tracks test cases through Ready for Automation, In Progress, and Completed stages; handles test cases with multiple automation labels (UI + API) without double-counting
 - **UI vs API automation** — dedicated breakdown chart for automation type split
 - **Test case breakdown** — pie chart showing manual, automation done, in-progress, and ready-for-automation
-- **Execution results** — pass/fail/blocked/not executed breakdown (stacked bar chart)
+- **Execution results** — pass/fail/blocked/not executed breakdown
 - **Pass rate** — percentage with colour-coded indicator
 - **Execution rate** — radial gauge showing percentage of test cases executed
 - **Execution trend** — monthly pass/fail/blocked line chart
 - **Test cases added per month** — bar + cumulative line combo chart
+- **Feature coverage** — folder-level automation coverage table with progress bars
 - **Date range filter** — last 7, 30, 90 days, or all time
 - **Auto-refresh** — configurable polling interval (1 min to 30 min)
 - **PDF export** — one-click export of the dashboard view
@@ -74,11 +75,7 @@ A proof-of-concept dashboard that visualizes QA metrics from [Zephyr Scale](http
    cp .env.example .env
    ```
 
-   Edit `.env` and fill in your values:
-
-   ```
-   ZEPHYR_API_TOKEN=your-zephyr-scale-api-token
-   ```
+   Edit `.env` and fill in your values. See [Environment Variables](#environment-variables) below.
 
 4. **Start development servers**
 
@@ -86,7 +83,19 @@ A proof-of-concept dashboard that visualizes QA metrics from [Zephyr Scale](http
    npm run dev
    ```
 
-   This starts both backend (`http://localhost:3001`) and frontend (`http://localhost:5173`) concurrently.
+   This starts both backend (`http://localhost:3002`) and frontend (`http://localhost:5173`) concurrently.
+
+## Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ZEPHYR_API_TOKEN` | Yes | — | Zephyr Scale API token |
+| `PORT` | No | `3002` | Backend server port |
+| `CACHE_TTL_PROJECTS` | No | `3600` | Cache TTL for project list (seconds) |
+| `CACHE_TTL_METRICS` | No | `300` | Cache TTL for metrics (seconds) |
+| `CORS_ORIGIN` | No | unset (allow all) | Allowed CORS origin(s), comma-separated. Set this in production. Example: `https://qa-dashboard.yourcompany.com` |
+| `TEAM_PROJECTS` | No | unset | Comma-separated project keys that have team sub-folders. Only these projects show the Squad filter. |
+| `TEAM_FOLDERS_<PROJECT>` | No | unset | Allowlist of folder names shown as squad options for a project. Example: `TEAM_FOLDERS_PROJ1=Team A,Team B` |
 
 ## Project Structure
 
@@ -130,16 +139,17 @@ zephyr-dashboard/
 │       │   ├── AutomationProgressChart.tsx # Progress bars with multi-label info note
 │       │   ├── ManualVsAutomatedChart.tsx  # Test case breakdown pie chart
 │       │   ├── UIvsAPIAutomationChart.tsx  # UI vs API automation bar chart
-│       │   ├── ExecutionResultsChart.tsx   # Stacked bar by status
+│       │   ├── ExecutionResultsChart.tsx   # Bar chart by execution status
 │       │   ├── ExecutionTrendChart.tsx     # Monthly trend line chart
 │       │   ├── TestCaseTrendChart.tsx      # Monthly additions + cumulative
 │       │   ├── PassRateCard.tsx
 │       │   ├── ExecutionRateGauge.tsx
+│       │   ├── FolderCoverageTable.tsx     # Folder-level automation coverage table
 │       │   ├── PassRateForecastChart.tsx   # Forecast chart with confidence band
 │       │   ├── ForecastInfoModal.tsx       # Methodology explanation modal
 │       │   ├── ForecastSummaryPanel.tsx    # Dynamic trend analysis panel
 │       │   ├── ProjectSelector.tsx
-│       │   ├── TeamFilter.tsx              # Sub-team folder dropdown
+│       │   ├── TeamFilter.tsx              # Squad pill-filter with reset button
 │       │   ├── DateRangeFilter.tsx
 │       │   └── RefreshControls.tsx
 │       ├── pages/
@@ -162,7 +172,8 @@ zephyr-dashboard/
 | GET | `/api/projects` | List all Zephyr Scale projects |
 | GET | `/api/folders/:projectKey` | List team folders for a project |
 | GET | `/api/metrics/:projectKey` | Get computed metrics for a project |
-| GET | `/api/metrics/:projectKey?days=30&teamFolderId=5` | Metrics filtered by date range and/or team folder |
+| GET | `/api/metrics/:projectKey?days=30&teamFolderId=<id>` | Metrics filtered by date range and/or squad folder |
+| GET | `/api/metrics/:projectKey/folder-coverage` | Get folder-level automation coverage |
 | POST | `/api/metrics/:projectKey/refresh` | Force cache refresh |
 | POST | `/api/ciSync/:projectKey/preview` | Parse a Cucumber HTML report and return execution preview |
 | POST | `/api/ciSync/:projectKey/push` | Push pre-parsed executions to Zephyr Scale (creates test cycle) |
