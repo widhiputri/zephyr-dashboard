@@ -11,14 +11,14 @@ export default function TeamFilter({ teams, value, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Team:</span>
+      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Squad:</span>
       {teams.map((team) => (
         <button
           key={team.id}
           onClick={() => onChange(team.id)}
           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
             value === team.id
-              ? "bg-indigo-600 text-white"
+              ? "bg-blue-600 text-white"
               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
           }`}
         >

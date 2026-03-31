@@ -149,7 +149,7 @@ export default function FolderCoverageTable({ rows, isLoading }: Props) {
               <div className="flex items-center justify-center gap-1">
                 <span>Automation Coverage</span>
                 <div className="relative group">
-                  <button className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold cursor-default">
+                  <button className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold cursor-help">
                     i
                   </button>
                   <div className="absolute right-0 bottom-full mb-2 w-56 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg normal-case tracking-normal leading-relaxed font-normal">

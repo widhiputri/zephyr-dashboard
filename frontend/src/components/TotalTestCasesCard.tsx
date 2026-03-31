@@ -6,9 +6,20 @@ interface Props {
   testCases: TestCaseMetrics;
 }
 
+const InfoTooltip = () => (
+  <div className="relative group">
+    <button className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold cursor-help">
+      i
+    </button>
+    <div className="absolute right-0 top-6 z-10 hidden group-hover:block w-64 bg-gray-900 text-white text-xs rounded-lg p-2.5 shadow-lg leading-relaxed">
+      If counts exceed the total, it means some test cases have multiple automation labels and appear in more than one category.
+    </div>
+  </div>
+);
+
 export default function TotalTestCasesCard({ testCases }: Props) {
   return (
-    <MetricCard title="Total Test Cases">
+    <MetricCard title="Total Test Cases" headerAction={<InfoTooltip />}>
       <div className="flex flex-col items-center justify-center h-[300px]">
         <p className="text-6xl sm:text-7xl font-bold text-blue-600">{formatNumber(testCases.total)}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -22,11 +33,6 @@ export default function TotalTestCasesCard({ testCases }: Props) {
             {testCases.deprecated > 0 && `${formatNumber(testCases.deprecated)} deprecated`}
             {testCases.deprecated > 0 && testCases.draft > 0 && ", "}
             {testCases.draft > 0 && `${formatNumber(testCases.draft)} draft`}
-          </p>
-        )}
-        {testCases.manual + testCases.uiAutomation + testCases.apiAutomation > testCases.total && (
-          <p className="mt-2 text-xs text-gray-400 text-center max-w-xs">
-            * Counts exceed total — some test cases have multiple automation labels and appear in more than one category
           </p>
         )}
       </div>
