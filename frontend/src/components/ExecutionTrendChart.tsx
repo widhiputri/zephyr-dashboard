@@ -16,6 +16,19 @@ interface Props {
   trend: ExecutionTrendPoint[];
 }
 
+function CustomLegend({ payload }: any) {
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1">
+      {payload?.map((entry: any) => (
+        <div key={entry.value} className="flex items-center gap-1.5">
+          <span className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+          <span className="text-xs font-medium text-gray-500">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ExecutionTrendChart({ trend }: Props) {
   if (trend.length === 0) {
     return (
@@ -39,13 +52,13 @@ export default function ExecutionTrendChart({ trend }: Props) {
 
   return (
     <MetricCard title="Execution Trend">
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={320}>
         <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="label" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} width={45} />
           <Tooltip formatter={(value: number) => formatNumber(value)} />
-          <Legend wrapperStyle={{ fontSize: "12px" }} />
+          <Legend content={<CustomLegend />} />
           <Line type="monotone" dataKey="pass" stroke="#10B981" name="Pass" strokeWidth={2} dot={{ r: 3 }} />
           <Line type="monotone" dataKey="fail" stroke="#EF4444" name="Fail" strokeWidth={2} dot={{ r: 3 }} />
           <Line type="monotone" dataKey="blocked" stroke="#F59E0B" name="Blocked" strokeWidth={2} dot={{ r: 3 }} />

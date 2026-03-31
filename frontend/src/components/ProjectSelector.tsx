@@ -22,19 +22,26 @@ export default function ProjectSelector({ selectedKey, onSelect }: Props) {
   const enabledProjects = projects?.filter((p: ZephyrProject) => p.enabled) || [];
 
   return (
-    <select
-      value={selectedKey || ""}
-      onChange={(e) => onSelect(e.target.value)}
-      className="block w-full sm:w-64 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-    >
-      <option value="" disabled>
-        Select a project
-      </option>
-      {enabledProjects.map((p: ZephyrProject) => (
-        <option key={p.key} value={p.key}>
-          {p.key}
+    <div className="relative w-full sm:w-64">
+      <select
+        value={selectedKey || ""}
+        onChange={(e) => onSelect(e.target.value)}
+        className="block w-full appearance-none rounded-md border border-gray-300 bg-white pl-3 pr-8 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+      >
+        <option value="" disabled>
+          Select a project
         </option>
-      ))}
-    </select>
+        {enabledProjects.map((p: ZephyrProject) => (
+          <option key={p.key} value={p.key}>
+            {p.key}
+          </option>
+        ))}
+      </select>
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5 text-gray-400">
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    </div>
   );
 }

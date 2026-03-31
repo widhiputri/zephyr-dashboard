@@ -139,13 +139,13 @@ export default function FolderCoverageTable({ rows, isLoading }: Props) {
 
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wide">
-            <th className="pb-3 font-medium text-left">Feature / Folder</th>
-            <th className="pb-3 font-medium text-center w-32">Automation TCs</th>
-            <th className="pb-3 font-medium text-center w-48">Ready for Automation</th>
-            <th className="pb-3 font-medium text-center w-44">Automation In Progress</th>
-            <th className="pb-3 font-medium text-center w-32">Automated</th>
-            <th className="pb-3 font-medium text-center w-80">
+          <tr className="border-b border-gray-200 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <th className="pb-3 text-left">Feature / Folder</th>
+            <th className="pb-3 text-center w-32">Automation TCs</th>
+            <th className="pb-3 text-center w-48">Ready for Automation</th>
+            <th className="pb-3 text-center w-44">Automation In Progress</th>
+            <th className="pb-3 text-center w-32">Automated</th>
+            <th className="pb-3 text-center w-80">
               <div className="flex items-center justify-center gap-1">
                 <span>Automation Coverage</span>
                 <div className="relative group">
@@ -174,7 +174,7 @@ export default function FolderCoverageTable({ rows, isLoading }: Props) {
               const hasChildren = parentIds.has(row.folderId);
               const isExpanded = expanded.has(row.folderId);
               return (
-                <tr key={row.folderId} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={row.folderId} className={`border-b border-gray-100 hover:bg-blue-50/40 ${row.depth === 0 ? "bg-slate-50/60" : ""}`}>
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-1" style={{ paddingLeft: `${row.depth * 20}px` }}>
                       {hasChildren ? (
@@ -187,20 +187,20 @@ export default function FolderCoverageTable({ rows, isLoading }: Props) {
                       ) : (
                         <span className="w-4 flex-shrink-0" />
                       )}
-                      <span className={row.depth === 0 ? "font-medium text-gray-900" : "text-gray-700"}>
+                      <span className={row.depth === 0 ? "font-semibold text-gray-800" : "text-gray-600"}>
                         {row.folderName}
                       </span>
                     </div>
                   </td>
-                  <td className="py-3 text-center text-gray-600">{row.total}</td>
-                  <td className="py-3 text-center text-gray-600">{row.readyForAutomation}</td>
-                  <td className="py-3 text-center text-gray-600">{row.inProgress}</td>
-                  <td className="py-3 text-center text-gray-600">{row.completed}</td>
+                  <td className="py-3 text-center text-gray-500">{row.total}</td>
+                  <td className="py-3 text-center text-gray-500">{row.readyForAutomation}</td>
+                  <td className="py-3 text-center text-gray-500">{row.inProgress}</td>
+                  <td className="py-3 text-center text-gray-500">{row.completed}</td>
                   <td className="py-3">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2.5">
+                      <div className="flex-1 bg-gray-200 rounded-full h-1.5">
                         <div
-                          className={`h-2.5 rounded-full ${coverageBarColor(row.coverageRate)}`}
+                          className={`h-1.5 rounded-full ${coverageBarColor(row.coverageRate)}`}
                           style={{ width: `${row.coverageRate}%` }}
                         />
                       </div>

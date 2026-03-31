@@ -37,6 +37,17 @@ export default function UIvsAPIAutomationChart({ progress }: Props) {
     },
   ];
 
+  const CustomLegend = ({ payload }: any) => (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1">
+      {payload?.map((entry: any) => (
+        <div key={entry.value} className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: entry.color }} />
+          <span className="text-xs font-medium text-gray-500">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null;
     const row = data.find((d) => d.name === label);
@@ -58,19 +69,19 @@ export default function UIvsAPIAutomationChart({ progress }: Props) {
       <div className="flex justify-around mb-3">
         {data.map((d) => (
           <div key={d.name} className="text-center">
-            <p className="text-2xl font-bold text-gray-900">{d.rate}%</p>
+            <p className={`text-2xl font-bold ${d.rate >= 50 ? "text-green-600" : d.rate >= 20 ? "text-amber-500" : "text-red-500"}`}>{d.rate}%</p>
             <p className="text-xs text-gray-500">{d.name}</p>
             <p className="text-xs text-gray-400">{formatNumber(d.Automated)}/{formatNumber(d.total)} automated</p>
           </div>
         ))}
       </div>
-      <ResponsiveContainer width="100%" height={195}>
+      <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} barCategoryGap="30%">
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="name" tick={{ fontSize: 11 }} />
           <YAxis tick={{ fontSize: 11 }} width={40} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend wrapperStyle={{ fontSize: "11px" }} />
+          <Legend content={<CustomLegend />} />
           <Bar dataKey="Automated" stackId="a" fill="#10B981">
             <LabelList dataKey="Automated" position="inside" fontSize={11} fill="#fff" />
           </Bar>

@@ -52,7 +52,7 @@ export default function ForecastSummaryPanel({ insight, dataPointsUsed }: Props)
       {/* Suggestions */}
       {insight.suggestions.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
             Recommendations
           </p>
           <ul className="space-y-1.5">

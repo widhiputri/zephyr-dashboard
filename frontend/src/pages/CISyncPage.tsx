@@ -75,8 +75,11 @@ export default function CISyncPage({ projectKey }: Props) {
 
   if (!projectKey) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        Select a project to use CI Sync
+      <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
+        <svg className="w-12 h-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <p className="text-sm">Select a project to use CI Sync</p>
       </div>
     );
   }
@@ -87,7 +90,11 @@ export default function CISyncPage({ projectKey }: Props) {
     return (
       <div className="max-w-2xl mx-auto py-12">
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-          <div className="text-5xl mb-4">✓</div>
+          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-green-100 mb-4">
+            <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-1">
             {synced} execution{synced !== 1 ? "s" : ""} synced to Zephyr
           </h2>
@@ -124,7 +131,7 @@ export default function CISyncPage({ projectKey }: Props) {
   if (step === "previewing" && preview) {
     return (
       <div className="max-w-4xl mx-auto py-6 space-y-4">
-        <h2 className="text-lg font-semibold text-gray-900">Preview</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Preview</h2>
 
         {/* Summary bar */}
         <div className="flex flex-wrap gap-3">
@@ -147,15 +154,15 @@ export default function CISyncPage({ projectKey }: Props) {
           <div className="max-h-[500px] overflow-y-auto">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium text-gray-600 w-28">Key</th>
-                  <th className="text-left px-4 py-2 font-medium text-gray-600">Scenario</th>
-                  <th className="text-left px-4 py-2 font-medium text-gray-600 w-24">Status</th>
+                <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="text-left px-4 py-2 w-28">Key</th>
+                  <th className="text-left px-4 py-2">Scenario</th>
+                  <th className="text-left px-4 py-2 w-24">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {preview.executions.map((e, i) => (
-                  <tr key={i} className="hover:bg-gray-50">
+                  <tr key={i} className="hover:bg-blue-50/40">
                     <td className="px-4 py-2 font-mono text-xs text-gray-700">{e.testCaseKey}</td>
                     <td className="px-4 py-2 text-gray-700 truncate max-w-xs" title={e.testName}>
                       {e.testName}
@@ -200,7 +207,7 @@ export default function CISyncPage({ projectKey }: Props) {
   return (
     <div className="max-w-xl mx-auto py-12 space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-gray-900">CI Sync</h2>
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">CI Sync</h2>
         <p className="text-sm text-gray-500 mt-1">
           Upload a Cucumber HTML report to sync execution results to Zephyr Scale.
           Scenario names must contain test case keys like{" "}
@@ -211,7 +218,7 @@ export default function CISyncPage({ projectKey }: Props) {
       {/* Run metadata */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Git Ref</label>
+          <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Git Ref</label>
           <input
             type="text"
             value={gitRef}
@@ -221,7 +228,7 @@ export default function CISyncPage({ projectKey }: Props) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Job ID</label>
+          <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Job ID</label>
           <input
             type="text"
             value={jobId}

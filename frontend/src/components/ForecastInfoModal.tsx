@@ -28,7 +28,7 @@ export default function ForecastInfoModal({ onClose }: Props) {
 
           {/* Reading the chart */}
           <section>
-            <h3 className="font-semibold text-gray-900 mb-2">How to read the chart</h3>
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">How to read the chart</h3>
             <ul className="space-y-2">
               <li className="flex gap-2">
                 <span className="mt-0.5 h-3 w-3 rounded-full bg-emerald-500 shrink-0" />
@@ -68,7 +68,7 @@ export default function ForecastInfoModal({ onClose }: Props) {
 
           {/* How to use it */}
           <section>
-            <h3 className="font-semibold text-gray-900 mb-2">How to use this forecast</h3>
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">How to use this forecast</h3>
             <ul className="space-y-1.5 list-disc list-inside text-gray-600">
               <li>
                 <span className="font-medium text-gray-800">Sprint / release planning</span> — if the forecast shows
@@ -92,7 +92,7 @@ export default function ForecastInfoModal({ onClose }: Props) {
 
           {/* The math */}
           <section>
-            <h3 className="font-semibold text-gray-900 mb-2">How the forecast is calculated</h3>
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">How the forecast is calculated</h3>
             <p className="text-gray-600 mb-3">
               The model uses <span className="font-medium text-gray-800">Holt's Double Exponential Smoothing (DES)</span>,
               a classical time-series method that tracks two components: the current <em>level</em> (average) and
@@ -100,18 +100,18 @@ export default function ForecastInfoModal({ onClose }: Props) {
             </p>
 
             <div className="space-y-3">
-              <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
+              <div className="bg-slate-50 rounded-lg px-4 py-3 space-y-1">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Update equations (each month t)</p>
                 <p className="font-mono text-xs text-gray-700">Lₜ = α · yₜ + (1 − α) · (Lₜ₋₁ + Bₜ₋₁)</p>
                 <p className="font-mono text-xs text-gray-700">Bₜ = β · (Lₜ − Lₜ₋₁) + (1 − β) · Bₜ₋₁</p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
+              <div className="bg-slate-50 rounded-lg px-4 py-3 space-y-1">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Forecast h months ahead</p>
                 <p className="font-mono text-xs text-gray-700">ŷₜ₊ₕ = Lₜ + h · Bₜ</p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg px-4 py-3 space-y-1">
+              <div className="bg-slate-50 rounded-lg px-4 py-3 space-y-1">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">90% confidence interval</p>
                 <p className="font-mono text-xs text-gray-700">CI = ŷ ± 1.645 × RMSE × √h</p>
                 <p className="text-xs text-gray-500 mt-1">RMSE is the root-mean-square error of the fitted values against the historical data.</p>
@@ -130,7 +130,7 @@ export default function ForecastInfoModal({ onClose }: Props) {
 
           {/* Limitations */}
           <section>
-            <h3 className="font-semibold text-gray-900 mb-2">Limitations</h3>
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Limitations</h3>
             <ul className="space-y-1.5 list-disc list-inside text-gray-600">
               <li>At least <span className="font-medium text-gray-800">3 months</span> of execution data are required. Fewer points produce no forecast.</li>
               <li>The model assumes the existing trend continues. It cannot anticipate sudden events (major refactors, team changes, new test suites).</li>

@@ -9,21 +9,12 @@ interface Props {
 export default function TotalTestCasesCard({ testCases }: Props) {
   return (
     <MetricCard title="Total Test Cases">
-      <div className="flex flex-col items-center justify-center h-[260px]">
-        <p className="text-6xl sm:text-7xl font-bold text-gray-900">{formatNumber(testCases.total)}</p>
-        <div className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm">
-          <div>
-            <span className="text-gray-500">Manual: </span>
-            <span className="font-semibold text-blue-600">{formatNumber(testCases.manual)}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">UI Automation: </span>
-            <span className="font-semibold text-green-600">{formatNumber(testCases.uiAutomation)}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">API Automation: </span>
-            <span className="font-semibold text-teal-600">{formatNumber(testCases.apiAutomation)}</span>
-          </div>
+      <div className="flex flex-col items-center justify-center h-[300px]">
+        <p className="text-6xl sm:text-7xl font-bold text-blue-600">{formatNumber(testCases.total)}</p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <span className="px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-xs font-medium">Manual: {formatNumber(testCases.manual)}</span>
+          <span className="px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-medium">UI Automation: {formatNumber(testCases.uiAutomation)}</span>
+          <span className="px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-medium">API Automation: {formatNumber(testCases.apiAutomation)}</span>
         </div>
         {(testCases.deprecated > 0 || testCases.draft > 0) && (
           <p className="mt-3 text-xs text-gray-400">

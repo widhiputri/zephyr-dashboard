@@ -11,7 +11,7 @@ export default function TeamFilter({ teams, value, onChange }: Props) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="text-xs text-gray-400 mr-1">Team:</span>
+      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1">Team:</span>
       {teams.map((team) => (
         <button
           key={team.id}

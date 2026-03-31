@@ -19,6 +19,23 @@ interface Props {
   forecast: QAForecast | undefined;
 }
 
+function CustomLegend({ payload }: any) {
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-1">
+      {payload?.map((entry: any) => (
+        <div key={entry.value} className="flex items-center gap-1.5">
+          {entry.type === "rect" ? (
+            <span className="w-3 h-3 rounded-sm flex-shrink-0 opacity-40" style={{ backgroundColor: entry.color }} />
+          ) : (
+            <span className="w-5 h-0.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color }} />
+          )}
+          <span className="text-xs font-medium text-gray-500">{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function InfoButton({ onClick }: { onClick: () => void }) {
   return (
     <button
@@ -85,9 +102,9 @@ export default function PassRateForecastChart({ forecast }: Props) {
   return (
     <MetricCard title="Pass Rate Forecast (3-month)" headerAction={infoBtn}>
       {showInfo && <ForecastInfoModal onClose={() => setShowInfo(false)} />}
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={360}>
         <ComposedChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="label" tick={{ fontSize: 11 }} />
           <YAxis
             domain={[0, 100]}
@@ -102,7 +119,7 @@ export default function PassRateForecastChart({ forecast }: Props) {
               return [`${num.toFixed(1)}%`, name];
             }}
           />
-          <Legend wrapperStyle={{ fontSize: "12px" }} />
+          <Legend content={<CustomLegend />} />
 
           {/* CI band — only for forecast points */}
           <Area

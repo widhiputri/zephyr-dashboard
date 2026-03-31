@@ -34,7 +34,7 @@ export default function RefreshControls({
     <div className="flex flex-wrap items-center gap-3 sm:gap-4">
       {lastUpdated && (
         <span
-          className="text-xs text-gray-400 w-full sm:w-auto cursor-default"
+          className="text-xs font-medium text-gray-400 tracking-wide w-full sm:w-auto cursor-default"
           title={new Date(lastUpdated).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}
         >
           Updated {relativeTime(lastUpdated)}

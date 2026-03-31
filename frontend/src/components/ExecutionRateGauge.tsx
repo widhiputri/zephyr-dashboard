@@ -14,7 +14,7 @@ export default function ExecutionRateGauge({ rate, executed, totalTestCases }: P
 
   return (
     <MetricCard title="Execution Rate">
-      <div className="flex flex-col items-center justify-center h-[260px]">
+      <div className="flex flex-col items-center justify-center h-[300px]">
         <p className={`text-6xl sm:text-7xl font-bold ${textColor}`}>{rate}%</p>
         <div className="w-3/4 mt-5 mb-1">
           <div className="w-full bg-gray-200 rounded-full h-3">

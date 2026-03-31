@@ -13,7 +13,7 @@ export default function PassRateCard({ passRate, executionResults }: Props) {
 
   return (
     <MetricCard title="Pass Rate">
-      <div className="flex flex-col items-center justify-center h-[260px]">
+      <div className="flex flex-col items-center justify-center h-[300px]">
         <p className={`text-6xl sm:text-7xl font-bold ${color}`}>{passRate}%</p>
         <div className="mt-6 text-center text-xs text-gray-500 space-y-1">
           <p>{formatNumber(executionResults.pass)} passed out of {formatNumber(total)} executed</p>

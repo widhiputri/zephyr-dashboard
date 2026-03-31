@@ -16,15 +16,18 @@ const navItems: { id: Page; label: string }[] = [
 
 export default function Layout({ children, activePage, onNavigate }: Props) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Zephyr Scale QA Dashboard
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">
-            Test case and execution metrics
-          </p>
+        <div className="w-full px-4 sm:px-6 lg:px-8 pt-4 pb-3 flex items-center gap-3">
+          <div className="w-1 h-8 rounded-full bg-blue-600 flex-shrink-0" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Zephyr Scale QA Dashboard
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+              Test case and execution metrics
+            </p>
+          </div>
         </div>
         <nav className="w-full px-4 sm:px-6 lg:px-8 flex gap-1">
           {navItems.map((item) => (

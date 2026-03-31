@@ -26,10 +26,14 @@ export default function DashboardGrid({ metrics }: Props) {
       <AutomationProgressChart progress={metrics.automationProgress} testCases={metrics.testCases} />
       <UIvsAPIAutomationChart progress={metrics.automationProgress} />
       <div className="md:col-span-2 lg:col-span-3">
-        <ExecutionTrendChart trend={metrics.executionTrend} />
-      </div>
-      <div className="md:col-span-2 lg:col-span-3">
-        <TestCaseTrendChart trend={metrics.testCaseTrend} />
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Trends</h3>
+          <div className="flex-1 h-px bg-gray-200" />
+        </div>
+        <div className="space-y-4 sm:space-y-6">
+          <ExecutionTrendChart trend={metrics.executionTrend} />
+          <TestCaseTrendChart trend={metrics.testCaseTrend} />
+        </div>
       </div>
     </div>
   );

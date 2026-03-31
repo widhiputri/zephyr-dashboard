@@ -36,10 +36,10 @@ export default function AutomationProgressChart({ progress, testCases }: Props) 
           ({formatNumber(progress.completed)}/{formatNumber(progress.total)} automated)
         </span>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-20} textAnchor="end" height={45} interval={0} />
           <YAxis tick={{ fontSize: 11 }} width={40} />
           <Tooltip />
           <Bar dataKey="value" name="Test Cases">
