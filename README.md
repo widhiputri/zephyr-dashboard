@@ -43,7 +43,6 @@ A dashboard that visualizes QA metrics from [Zephyr Scale](https://smartbear.com
 | Charts | Recharts |
 | Styling | Tailwind CSS |
 | Data fetching | TanStack React Query v5 |
-| HTTP client | Axios (backend Zephyr API calls) |
 | Caching | node-cache (in-memory, TTL-based) |
 | PDF export | html2canvas + jsPDF |
 | Forecasting | Holt's Double Exponential Smoothing (custom implementation) |
