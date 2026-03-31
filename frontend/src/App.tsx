@@ -5,9 +5,10 @@ import RefreshControls from "./components/RefreshControls";
 import DateRangeFilter from "./components/DateRangeFilter";
 import TeamFilter from "./components/TeamFilter";
 import DashboardGrid from "./components/DashboardGrid";
+import FolderCoverageTable from "./components/FolderCoverageTable";
 import ForecastPage from "./pages/ForecastPage";
 import CISyncPage from "./pages/CISyncPage";
-import { useMetrics, useRefreshMetrics, useTeamFolders } from "./api/dashboardApi";
+import { useMetrics, useRefreshMetrics, useTeamFolders, useFolderCoverage } from "./api/dashboardApi";
 import { exportDashboardPdf } from "./utils/exportPdf";
 
 type Page = "dashboard" | "forecast" | "ciSync";
@@ -23,6 +24,7 @@ export default function App() {
 
   const { data: teamFolders = [] } = useTeamFolders(projectKey);
   const { data: metrics, isLoading, error } = useMetrics(projectKey, pollingInterval, days, teamFolderId);
+  const { data: folderCoverage = [], isLoading: isFolderLoading } = useFolderCoverage(projectKey, teamFolderId);
   const refreshMutation = useRefreshMetrics();
 
   // Reset team filter when project changes
@@ -104,6 +106,27 @@ export default function App() {
           {metrics && (
             <div ref={dashboardRef}>
               <DashboardGrid metrics={metrics} />
+            </div>
+          )}
+
+          {projectKey && (
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-base font-semibold text-gray-700">Feature Coverage</h2>
+                <div className="relative group">
+                  <button className="flex items-center justify-center w-5 h-5 rounded-full bg-gray-100 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold cursor-default">
+                    i
+                  </button>
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-80 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg leading-relaxed">
+                    <p>Only folders with automation-labeled test cases (UI or API Automation) are shown. Counts roll up from all sub-folders. Folders with no automation test cases are hidden.</p>
+                    <p className="mt-2">Each test case is counted once. For test cases with both UI and API labels, only their single Zephyr status is used (UI and API automation progress cannot be tracked separately for the same test case).</p>
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-gray-800 rotate-45 -mt-1" />
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 p-4">
+                <FolderCoverageTable rows={folderCoverage} isLoading={isFolderLoading} />
+              </div>
             </div>
           )}
         </>

@@ -76,6 +76,18 @@ export interface QAForecast {
   insufficient: boolean;
 }
 
+export interface FolderCoverageRow {
+  folderId: number;
+  folderName: string;
+  parentId: number | null;
+  depth: number;
+  total: number;
+  completed: number;
+  inProgress: number;
+  readyForAutomation: number;
+  coverageRate: number;
+}
+
 export interface DashboardMetrics {
   projectKey: string;
   projectName: string;
@@ -125,6 +137,18 @@ export function useMetrics(projectKey: string | null, pollingInterval: number, d
     queryFn: () => fetchJson<DashboardMetrics>(`/api/metrics/${projectKey}${query}`),
     enabled: !!projectKey,
     refetchInterval: pollingInterval || false,
+  });
+}
+
+export function useFolderCoverage(projectKey: string | null, teamFolderId?: number) {
+  const params = new URLSearchParams();
+  if (teamFolderId !== undefined) params.set("teamFolderId", String(teamFolderId));
+  const query = params.size > 0 ? `?${params}` : "";
+  return useQuery({
+    queryKey: ["folderCoverage", projectKey, teamFolderId],
+    queryFn: () => fetchJson<FolderCoverageRow[]>(`/api/metrics/${projectKey}/folder-coverage${query}`),
+    enabled: !!projectKey,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

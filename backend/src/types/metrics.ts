@@ -47,19 +47,31 @@ export interface TestCaseTrendPoint {
 }
 
 export interface ForecastPoint {
-  month: string;        // "YYYY-MM"
-  value: number;        // predicted pass rate 0–100
-  lower: number;        // 90% CI lower bound, clamped to 0
-  upper: number;        // 90% CI upper bound, clamped to 100
+  month: string;
+  value: number;
+  lower: number;
+  upper: number;
   isForecast: boolean;
 }
 
 export interface QAForecast {
   passRate: ForecastPoint[];
-  horizonMonths: number;   // 3
-  modelType: string;       // "holt-des"
+  horizonMonths: number;
+  modelType: string;
   dataPointsUsed: number;
-  insufficient: boolean;   // true if < 3 months of execution data
+  insufficient: boolean;
+}
+
+export interface FolderCoverageRow {
+  folderId: number;
+  folderName: string;
+  parentId: number | null;
+  depth: number;
+  total: number;
+  completed: number;
+  inProgress: number;
+  readyForAutomation: number;
+  coverageRate: number;
 }
 
 export interface DashboardMetrics {

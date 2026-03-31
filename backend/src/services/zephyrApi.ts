@@ -1,20 +1,6 @@
-import axios, { AxiosInstance, isAxiosError } from "axios";
 import { config } from "../config.js";
 
-let apiClient: AxiosInstance | null = null;
-
-function getClient(): AxiosInstance {
-  if (!apiClient) {
-    apiClient = axios.create({
-      baseURL: "https://api.zephyrscale.smartbear.com/v2",
-      headers: {
-        Authorization: `Bearer ${config.zephyrApiToken}`,
-        Accept: "application/json",
-      },
-    });
-  }
-  return apiClient;
-}
+const BASE_URL = "https://api.zephyrscale.smartbear.com/v2";
 
 interface PaginatedResponse<T> {
   values: T[];
@@ -24,29 +10,38 @@ interface PaginatedResponse<T> {
   isLast: boolean;
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function getJson<T>(path: string, params: Record<string, unknown> = {}): Promise<T> {
+  const url = new URL(`${BASE_URL}${path}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null) {
+      url.searchParams.set(key, String(value));
+    }
+  }
+  const res = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${config.zephyrApiToken}`,
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Zephyr API error: ${res.status} ${res.statusText} — ${url.pathname}`);
+  }
+  return res.json() as Promise<T>;
 }
 
 export async function fetchAllPages<T>(
   path: string,
   params: Record<string, unknown> = {}
 ): Promise<T[]> {
-  const client = getClient();
   const maxResults = 100;
 
-  // Fetch first page to get total count
-  const firstRes = await client.get<PaginatedResponse<T>>(path, {
-    params: { ...params, startAt: 0, maxResults },
-  });
-  const firstPage = firstRes.data;
+  const firstPage = await getJson<PaginatedResponse<T>>(path, { ...params, startAt: 0, maxResults });
   const allItems: T[] = [...firstPage.values];
 
   if (firstPage.isLast || firstPage.total <= maxResults) {
     return allItems;
   }
 
-  // Fire all remaining pages in parallel
   const remainingStarts: number[] = [];
   for (let startAt = maxResults; startAt < firstPage.total; startAt += maxResults) {
     remainingStarts.push(startAt);
@@ -54,9 +49,7 @@ export async function fetchAllPages<T>(
 
   const pages = await Promise.all(
     remainingStarts.map((startAt) =>
-      client.get<PaginatedResponse<T>>(path, {
-        params: { ...params, startAt, maxResults },
-      }).then((r) => r.data.values)
+      getJson<PaginatedResponse<T>>(path, { ...params, startAt, maxResults }).then((r) => r.values)
     )
   );
 
@@ -68,25 +61,24 @@ export async function fetchAllPages<T>(
 }
 
 export async function fetchSingle<T>(path: string): Promise<T> {
-  const client = getClient();
-  const res = await client.get<T>(path);
-  return res.data;
+  return getJson<T>(path);
 }
 
 export async function postToZephyr<T>(path: string, body: unknown): Promise<T> {
-  const client = getClient();
-  try {
-    const res = await client.post<T>(path, body, {
-      headers: { "Content-Type": "application/json" },
-    });
-    return res.data;
-  } catch (err) {
-    if (isAxiosError(err) && err.response) {
-      const status = err.response.status;
-      const data = JSON.stringify(err.response.data);
-      console.error(`[Zephyr POST ${path}] ${status}: ${data}`);
-      throw new Error(`Zephyr API ${status}: ${data}`);
-    }
-    throw err;
+  const url = `${BASE_URL}${path}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.zephyrApiToken}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.text();
+    console.error(`[Zephyr POST ${path}] ${res.status}: ${data}`);
+    throw new Error(`Zephyr API ${res.status}: ${data}`);
   }
+  return res.json() as Promise<T>;
 }

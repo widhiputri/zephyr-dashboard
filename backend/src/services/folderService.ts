@@ -1,7 +1,7 @@
 import { fetchAllPages } from "./zephyrApi.js";
 import NodeCache from "node-cache";
 
-interface ZephyrFolder {
+export interface ZephyrFolder {
   id: number;
   name: string;
   parentId: number | null;
@@ -21,6 +21,10 @@ async function fetchFolders(projectKey: string): Promise<ZephyrFolder[]> {
 
   folderCache.set(projectKey, folders);
   return folders;
+}
+
+export async function getAllFolderNodes(projectKey: string): Promise<ZephyrFolder[]> {
+  return fetchFolders(projectKey);
 }
 
 /** Root folders (no parent) — each represents a top-level team */

@@ -1,11 +1,11 @@
-import { DashboardMetrics, AutomationProgressMetrics, AutomationTypeProgress, ExecutionTrendPoint, TestCaseTrendPoint } from "../types/metrics.js";
+import { DashboardMetrics, AutomationProgressMetrics, AutomationTypeProgress, ExecutionTrendPoint, TestCaseTrendPoint, FolderCoverageRow } from "../types/metrics.js";
 import { ZephyrTestCase, ZephyrTestExecution } from "../types/zephyr.js";
 import { getCachedMetrics, setCachedMetrics } from "../cache/cacheManager.js";
 import { getAllProjects } from "./projectService.js";
 import { getAllTestCases, getTestCaseStatuses } from "./testCaseService.js";
 import { getAllTestExecutions, getExecutionStatuses } from "./testExecutionService.js";
+import { buildTeamMap, getAllFolderNodes } from "./folderService.js";
 import { forecastPassRate } from "./forecastService.js";
-import { buildTeamMap } from "./folderService.js";
 
 function getAutomationTypes(tc: ZephyrTestCase): Set<"ui" | "api"> {
   const types = new Set<"ui" | "api">();
@@ -260,4 +260,81 @@ export async function getMetrics(projectKey: string, days?: number, teamFolderId
 
   setCachedMetrics(cacheKey, metrics);
   return metrics;
+}
+
+export async function getFolderCoverage(projectKey: string, teamFolderId?: number): Promise<FolderCoverageRow[]> {
+  const [folders, testCases, tcStatuses] = await Promise.all([
+    getAllFolderNodes(projectKey),
+    getAllTestCases(projectKey),
+    getTestCaseStatuses(projectKey),
+  ]);
+
+  const folderMap = new Map(folders.map((f) => [f.id, f]));
+  const childrenMap = new Map<number | null, number[]>();
+  for (const f of folders) {
+    const key = f.parentId ?? null;
+    if (!childrenMap.has(key)) childrenMap.set(key, []);
+    childrenMap.get(key)!.push(f.id);
+  }
+
+  const tcStatusMap = new Map<number, string>();
+  for (const s of tcStatuses) tcStatusMap.set(s.id, s.name);
+
+  // Only automation test cases that are not deprecated or draft
+  const automationTCs = testCases.filter((tc) => {
+    const statusName = tcStatusMap.get(tc.status.id) || "";
+    const s = statusName.toLowerCase();
+    if (s.includes("deprecated") || s.includes("draft")) return false;
+    return getAutomationTypes(tc).size > 0;
+  });
+
+  const tcsByFolder = new Map<number, typeof automationTCs>();
+  for (const tc of automationTCs) {
+    if (!tc.folder) continue;
+    if (!tcsByFolder.has(tc.folder.id)) tcsByFolder.set(tc.folder.id, []);
+    tcsByFolder.get(tc.folder.id)!.push(tc);
+  }
+
+  function getAllDescendants(folderId: number): number[] {
+    const result: number[] = [folderId];
+    for (const childId of childrenMap.get(folderId) ?? []) {
+      result.push(...getAllDescendants(childId));
+    }
+    return result;
+  }
+
+  function computeMetrics(folderId: number) {
+    let total = 0, completed = 0, inProgress = 0, readyForAutomation = 0;
+    for (const id of getAllDescendants(folderId)) {
+      for (const tc of tcsByFolder.get(id) ?? []) {
+        total++;
+        const statusName = tcStatusMap.get(tc.status.id) || "";
+        const status = classifyAutomationStatus(statusName);
+        if (status === "completed") completed++;
+        else if (status === "inProgress") inProgress++;
+        else readyForAutomation++;
+      }
+    }
+    return { total, completed, inProgress, readyForAutomation, coverageRate: total > 0 ? Math.round((completed / total) * 100) : 0 };
+  }
+
+  const displayRootIds = teamFolderId !== undefined
+    ? (childrenMap.get(teamFolderId) ?? [])
+    : (childrenMap.get(null) ?? []);
+
+  const rows: FolderCoverageRow[] = [];
+
+  function traverse(folderIds: number[], depth: number) {
+    for (const folderId of folderIds) {
+      const folder = folderMap.get(folderId);
+      if (!folder) continue;
+      const metrics = computeMetrics(folderId);
+      if (metrics.total === 0) continue;
+      rows.push({ folderId, folderName: folder.name, parentId: folder.parentId, depth, ...metrics });
+      traverse(childrenMap.get(folderId) ?? [], depth + 1);
+    }
+  }
+
+  traverse(displayRootIds, 0);
+  return rows;
 }

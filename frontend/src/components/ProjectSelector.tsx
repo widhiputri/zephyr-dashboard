@@ -28,7 +28,7 @@ export default function ProjectSelector({ selectedKey, onSelect }: Props) {
       className="block w-full sm:w-64 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
     >
       <option value="" disabled>
-        Select a project...
+        Select a project
       </option>
       {enabledProjects.map((p: ZephyrProject) => (
         <option key={p.key} value={p.key}>
